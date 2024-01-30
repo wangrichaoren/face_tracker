@@ -83,7 +83,7 @@ class Window(MSFluentWindow):
 
     def initWindow(self):
         # 缩放界面，设置界面图标和标题，移动到屏幕中间
-        self.resize(900, 700)
+        self.resize(1000, 800)
         self.setWindowIcon(QIcon('resource/image/logo.png'))
         self.setWindowTitle('Face Tracker')
         desktop = QApplication.desktop().availableGeometry()
