@@ -59,23 +59,7 @@
         <property name="bottomMargin">
          <number>10</number>
         </property>
-        <item row="0" column="0">
-         <widget class="ComboBox" name="chooseBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
+        <item row="0" column="2">
          <widget class="PushButton" name="settingButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -88,7 +72,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="2">
+        <item row="1" column="0" colspan="3">
          <widget class="PushButton" name="camButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -107,7 +91,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="2">
+        <item row="2" column="0" colspan="3">
          <widget class="PushButton" name="detButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -123,6 +107,32 @@
           </property>
           <property name="text">
            <string>开启视觉检测</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="ComboBox" name="chooseBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="ToolButton" name="refButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
          </widget>
         </item>
@@ -252,6 +262,11 @@
   <customwidget>
    <class>PushButton</class>
    <extends>QPushButton</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>ToolButton</class>
+   <extends>QToolButton</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>

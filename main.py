@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 import sys
-from PyQt5.QtCore import Qt, QUrl, QSettings
+from PyQt5.QtCore import Qt, QUrl, QSettings, QSize
 from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import QApplication, QFrame, QHBoxLayout
 from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme, MSFluentWindow,
                             NavigationAvatarWidget, qrouter, SubtitleLabel, setFont, isDarkTheme,
-                            NavigationPushButton, NavigationWidget)
+                            NavigationPushButton, NavigationWidget, SplashScreen)
 from qfluentwidgets import FluentIcon as FIF
 
 from view.servo_interface import ServoInterface

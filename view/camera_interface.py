@@ -2,7 +2,7 @@
 from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import QWidget, QGraphicsDropShadowEffect
 from PyQt5.QtCore import pyqtSignal, QSettings
-from qfluentwidgets import setFont, MessageBox
+from qfluentwidgets import setFont, MessageBox, FluentIcon
 import cv2
 
 from view.ui_camera import Ui_Camera
@@ -30,6 +30,8 @@ class CameraInterface(Ui_Camera, QWidget):
         setFont(self.fpsLabel, 13)
         setFont(self.whBodyLabel, 13)
         setFont(self.posLabel, 13)
+
+        self.refButton.setIcon(FluentIcon.SYNC)
 
         # 设置帮助信息
         help_text = """
@@ -76,8 +78,18 @@ class CameraInterface(Ui_Camera, QWidget):
         self.settingButton.clicked.connect(self.settingCamIdxSlot)
         self.camButton.clicked.connect(self.openCamSlot)
         self.detButton.clicked.connect(self.detSlot)
+        self.refButton.clicked.connect(self.refCamDrivers)
 
         self.update_frame_info_sign.connect(self.updateFrameInfoSlot)
+
+    def refCamDrivers(self):
+        """
+        刷新相机设备数量
+        :return:
+        """
+        self.chooseBox.clear()
+        for i in self.getAllCameraDrives():
+            self.chooseBox.addItem("相机 {}".format(i))
 
     def updateFrameInfoSlot(self, w, h, fps):
         self.whLineEdit.setText("{}x{}".format(w, h))
@@ -103,6 +115,7 @@ class CameraInterface(Ui_Camera, QWidget):
             self._camera_manager.update_frame_sign.connect(self.updateFrame)
             self.detButton.setEnabled(True)
             self.chooseBox.setEnabled(False)
+            self.refButton.setEnabled(False)
             self.nameLineEdit.setText(self.chooseBox.currentText())
             self.update_frame_info_sign.emit(*self._camera_manager.getFrameWH(), self._camera_manager.getFPS())
             self.camButton.setText("关闭相机")
@@ -113,6 +126,7 @@ class CameraInterface(Ui_Camera, QWidget):
                 self._camera_manager = None
                 self.detButton.setEnabled(False)
                 self.chooseBox.setEnabled(True)
+                self.refButton.setEnabled(True)
                 self.nameLineEdit.setText("")
                 self.whLineEdit.setText("")
                 self.fpsLineEdit.setText("")
