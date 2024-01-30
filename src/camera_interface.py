@@ -47,9 +47,11 @@ class CameraInterface(Ui_Camera, QWidget):
                 """
         self.helpPlainTextEdit.document().setHtml(help_text)
 
-        # 扫描当前设备下的所有可用相机
-        for i in self.getAllCameraDrives():
-            self.chooseBox.addItem("相机 {}".format(i))
+        # 给个默认的相机
+        self.chooseBox.addItem("相机 1")
+        # # 扫描当前设备下的所有可用相机
+        # for i in self.getAllCameraDrives():
+        #     self.chooseBox.addItem("相机 {}".format(i))
 
         # 设置控件阴影
         self.setShadowEffect(self.videoCardWidget)

@@ -8,9 +8,9 @@ from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme,
                             NavigationPushButton, NavigationWidget, SplashScreen)
 from qfluentwidgets import FluentIcon as FIF
 
-from view.servo_interface import ServoInterface
-from view.camera_interface import CameraInterface
-from view.main_interface import MainInterface
+from src.servo_interface import ServoInterface
+from src.camera_interface import CameraInterface
+from src.main_interface import MainInterface
 
 
 class Widget(QFrame):
