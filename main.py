@@ -10,6 +10,7 @@ from qfluentwidgets import FluentIcon as FIF
 
 from view.servo_interface import ServoInterface
 from view.camera_interface import CameraInterface
+from view.main_interface import MainInterface
 
 
 class Widget(QFrame):
@@ -33,7 +34,7 @@ class Window(MSFluentWindow):
         self.settings = QSettings("config/setting.ini", QSettings.IniFormat)
 
         # 添加子界面
-        self.mainInterface = Widget("主程序", self)
+        self.mainInterface = MainInterface(self)
         self.cameraInterface = CameraInterface(self)
         self.servoInterface = ServoInterface(self)
 
