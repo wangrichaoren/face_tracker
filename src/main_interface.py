@@ -8,9 +8,13 @@ import cv2
 
 from view.ui_main import Ui_Main
 
+"""
+    主程序界面
+"""
+
 
 class MainInterface(Ui_Main, QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, face_detector, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
 

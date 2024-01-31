@@ -1,21 +1,25 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import QWidget, QGraphicsDropShadowEffect
-from PyQt5.QtCore import pyqtSignal, QSettings
+from PyQt5.QtCore import pyqtSignal, QSettings, Qt
 from qfluentwidgets import setFont, MessageBox, FluentIcon
 import cv2
-
 from view.ui_camera import Ui_Camera
 from src.camera_manager import CameraManager
+from src.face_detect_interface import FaceDetector
+
+"""
+    调试相机界面
+"""
 
 
 class CameraInterface(Ui_Camera, QWidget):
-    update_frame_info_sign = pyqtSignal(int, int, int)
+    update_frame_info_sign = pyqtSignal(int, int)
 
-    def __init__(self, parent=None):
+    def __init__(self, face_detector, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-
+        self.face_detector = face_detector
         self._isCamOpen = False
         self._isDetOpen = False
 
@@ -27,7 +31,7 @@ class CameraInterface(Ui_Camera, QWidget):
         setFont(self.camButton, 17)
         setFont(self.detButton, 17)
         setFont(self.nameLabel, 13)
-        setFont(self.fpsLabel, 13)
+        setFont(self.devLabel, 13)
         setFont(self.whBodyLabel, 13)
         setFont(self.posLabel, 13)
 
@@ -48,10 +52,7 @@ class CameraInterface(Ui_Camera, QWidget):
         self.helpPlainTextEdit.document().setHtml(help_text)
 
         # 给个默认的相机
-        self.chooseBox.addItem("相机 1")
-        # # 扫描当前设备下的所有可用相机
-        # for i in self.getAllCameraDrives():
-        #     self.chooseBox.addItem("相机 {}".format(i))
+        self.chooseBox.addItem("相机 {}".format(self._settings.value("CamIdx")))
 
         # 设置控件阴影
         self.setShadowEffect(self.videoCardWidget)
@@ -93,9 +94,8 @@ class CameraInterface(Ui_Camera, QWidget):
         for i in self.getAllCameraDrives():
             self.chooseBox.addItem("相机 {}".format(i))
 
-    def updateFrameInfoSlot(self, w, h, fps):
+    def updateFrameInfoSlot(self, w, h):
         self.whLineEdit.setText("{}x{}".format(w, h))
-        self.fpsLineEdit.setText(str(fps))
 
     def openCamSlot(self):
         if not self._isCamOpen:
@@ -114,12 +114,13 @@ class CameraInterface(Ui_Camera, QWidget):
                 w.exec()
                 self._camera_manager = None
                 return
-            self._camera_manager.update_frame_sign.connect(self.updateFrame)
+            self._camera_manager.update_frame_sign.connect(self.updateFrame, Qt.DirectConnection)
             self.detButton.setEnabled(True)
             self.chooseBox.setEnabled(False)
             self.refButton.setEnabled(False)
             self.nameLineEdit.setText(self.chooseBox.currentText())
-            self.update_frame_info_sign.emit(*self._camera_manager.getFrameWH(), self._camera_manager.getFPS())
+            self.devLineEdit.setText("cpu")
+            self.update_frame_info_sign.emit(*self._camera_manager.getFrameWH())
             self.camButton.setText("关闭相机")
         else:
             if self._camera_manager is not None:
@@ -131,18 +132,26 @@ class CameraInterface(Ui_Camera, QWidget):
                 self.refButton.setEnabled(True)
                 self.nameLineEdit.setText("")
                 self.whLineEdit.setText("")
-                self.fpsLineEdit.setText("")
+                self.devLineEdit.setText("")
                 self.posLineEdit.setText("")
+                self.detButton.setText("开启视觉检测")
+                self._isDetOpen = False
                 self.camView.setPixmap(QPixmap())
             self.camButton.setText("开启相机")
         self._isCamOpen = not self._isCamOpen
 
     def updateFrame(self, frame):
         _frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
+        if self._isDetOpen:
+            assert isinstance(self.face_detector, FaceDetector)
+            res, _frame = self.face_detector.inference(_frame)
         _image = QImage(_frame[:], _frame.shape[1], _frame.shape[0], _frame.shape[1] * 3,
                         QImage.Format_RGB888)
         _out = QPixmap(_image)
-        self.camView.setPixmap(_out)  # 设置图片显示
+        if self._isCamOpen:
+            self.camView.setPixmap(_out)  # 设置图片显示
+        else:
+            self.camView.setPixmap(QPixmap())
 
     def detSlot(self):
         if not self._isDetOpen:

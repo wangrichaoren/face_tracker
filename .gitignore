@@ -2,3 +2,4 @@
 backup
 test
 **/__pycache__
+*.sh

@@ -1,45 +1,39 @@
 # -*- coding:utf-8 -*-
 import sys
-from PyQt5.QtCore import Qt, QUrl, QSettings, QSize
-from PyQt5.QtGui import QIcon, QDesktopServices
+from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFrame, QHBoxLayout
-from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme, MSFluentWindow,
-                            NavigationAvatarWidget, qrouter, SubtitleLabel, setFont, isDarkTheme,
-                            NavigationPushButton, NavigationWidget, SplashScreen)
+from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme, MSFluentWindow, SubtitleLabel, setFont,
+                            isDarkTheme, NavigationPushButton)
 from qfluentwidgets import FluentIcon as FIF
-
 from src.servo_interface import ServoInterface
 from src.camera_interface import CameraInterface
 from src.main_interface import MainInterface
-
-
-class Widget(QFrame):
-
-    def __init__(self, text: str, parent=None):
-        super().__init__(parent=parent)
-        self.label = SubtitleLabel(text, self)
-        self.hBoxLayout = QHBoxLayout(self)
-
-        setFont(self.label, 24)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.hBoxLayout.addWidget(self.label, 1, Qt.AlignCenter)
-        self.setObjectName(text.replace(' ', '-'))
+from src.face_detect_interface import FaceDetector
 
 
 class Window(MSFluentWindow):
-
     def __init__(self):
         super().__init__()
         # 加载配置文件
         self.settings = QSettings("config/setting.ini", QSettings.IniFormat)
 
+        # 初始化人脸识别检测器
+        self.face_detector = FaceDetector("weights/FaceBoxes.pth")
+
         # 添加子界面
-        self.mainInterface = MainInterface(self)
-        self.cameraInterface = CameraInterface(self)
+        self.mainInterface = MainInterface(self.face_detector, self)
+        self.cameraInterface = CameraInterface(self.face_detector, self)
         self.servoInterface = ServoInterface(self)
 
         self.initNavigation()
         self.initWindow()
+
+        self.stackedWidget.currentChanged.connect(self.widgetChange)
+
+    def widgetChange(self):
+        # todo 切换界面的时候 应该检测 是否活动 活动中应该停止
+        print(self.stackedWidget.currentIndex())
 
     def initNavigation(self):
         self.addSubInterface(self.mainInterface, FIF.HOME, '主程序')

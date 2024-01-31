@@ -8,6 +8,10 @@ from qfluentwidgets import FluentIcon, PushButton, PlainTextEdit, LineEdit, Comb
 from view.ui_servo import Ui_servo
 from src.servo_manager import ServoManager, ServoEnum
 
+"""
+    舵机调试界面
+"""
+
 
 class ServoInterface(Ui_servo, QWidget):
     log_sign = pyqtSignal(int, str, name="log_sign")  # 日志信号 0-正常 1-异常 2-错误
