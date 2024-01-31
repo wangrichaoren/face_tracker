@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import sys
-from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtCore import Qt, QSettings, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFrame, QHBoxLayout
 from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme, MSFluentWindow, SubtitleLabel, setFont,
@@ -9,10 +9,15 @@ from qfluentwidgets import FluentIcon as FIF
 from src.servo_interface import ServoInterface
 from src.camera_interface import CameraInterface
 from src.main_interface import MainInterface
+
 from src.face_detect_interface import FaceDetector
+from src.servo_manager import ServoManager
 
 
 class Window(MSFluentWindow):
+    stop_servo_ctl_sign = pyqtSignal()
+    stop_camera_ctl_sign = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         # 加载配置文件
@@ -20,20 +25,30 @@ class Window(MSFluentWindow):
 
         # 初始化人脸识别检测器
         self.face_detector = FaceDetector("weights/FaceBoxes.pth")
+        # 初始化舵机驱动
+        self.servo_manager = ServoManager()
 
         # 添加子界面
         self.mainInterface = MainInterface(self.face_detector, self)
         self.cameraInterface = CameraInterface(self.face_detector, self)
-        self.servoInterface = ServoInterface(self)
+        self.servoInterface = ServoInterface(self.servo_manager, self)
 
         self.initNavigation()
         self.initWindow()
 
+        self.connectSignSlots()
+
+    def connectSignSlots(self):
         self.stackedWidget.currentChanged.connect(self.widgetChange)
+        self.stop_servo_ctl_sign.connect(self.servoInterface.stopServo)
 
     def widgetChange(self):
         # todo 切换界面的时候 应该检测 是否活动 活动中应该停止
         print(self.stackedWidget.currentIndex())
+        if self.servo_manager.isAlive():
+            print("servo is alive")
+            self.stop_servo_ctl_sign.emit()
+
 
     def initNavigation(self):
         self.addSubInterface(self.mainInterface, FIF.HOME, '主程序')

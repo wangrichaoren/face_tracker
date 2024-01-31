@@ -36,6 +36,17 @@ class ServoManager(object):
         self.horizontal_servo_angle = 0
         self._is_random = False
 
+    def isAlive(self):
+        """
+        servo是否已经开启
+        :return:
+        """
+        if self.serial is None:
+            return False
+        if self.serial.is_open:
+            return True
+        return False
+
     def connectSerial(self):
         """
         连接串口

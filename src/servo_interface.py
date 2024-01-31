@@ -6,7 +6,7 @@ from threading import Thread
 from qfluentwidgets import FluentIcon, PushButton, PlainTextEdit, LineEdit, ComboBox, BodyLabel, setFont, MessageBox
 
 from view.ui_servo import Ui_servo
-from src.servo_manager import ServoManager, ServoEnum
+from src.servo_manager import ServoEnum
 
 """
     舵机调试界面
@@ -17,14 +17,15 @@ class ServoInterface(Ui_servo, QWidget):
     log_sign = pyqtSignal(int, str, name="log_sign")  # 日志信号 0-正常 1-异常 2-错误
     update_angle_sign = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, servo_manager, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
 
         # 属性变量
         self._isConnect = False
         self._isRandom = False
-        self._servoManager = ServoManager()
+        # self._servoManager = ServoManager()
+        self._servoManager = servo_manager
 
         self.upButton.setIcon(FluentIcon.UP)
         self.downButton.setIcon(FluentIcon.DOWN)
@@ -270,6 +271,11 @@ class ServoInterface(Ui_servo, QWidget):
             return
         self.log_sign.emit(0, "舵机复位.")
         self.update_angle_sign.emit()
+
+    def stopServo(self):
+        if self._isRandom:
+            self.testServo()
+        self.connectServo()
 
     def testServo(self):
         if self._isRandom:
