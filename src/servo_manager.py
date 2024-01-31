@@ -47,7 +47,7 @@ class ServoManager(object):
             return True
         return False
 
-    def connectSerial(self):
+    def connectSerial(self, port="COM4"):
         """
         连接串口
         :return:
@@ -55,7 +55,7 @@ class ServoManager(object):
         if self.serial is not None:
             return
         try:
-            self.serial = serial.Serial("COM4", 9600)  # todo 不知道com4会不会变？
+            self.serial = serial.Serial(port, 9600)  # todo 不知道com4会不会变？
         except Exception as e:
             print(e)
             return False

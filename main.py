@@ -12,11 +12,12 @@ from src.main_interface import MainInterface
 
 from src.face_detect_interface import FaceDetector
 from src.servo_manager import ServoManager
+from src.camera_manager import CameraManager
 
 
 class Window(MSFluentWindow):
-    stop_servo_ctl_sign = pyqtSignal()
-    stop_camera_ctl_sign = pyqtSignal()
+    # stop_servo_ctl_sign = pyqtSignal()
+    # stop_camera_ctl_sign = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -27,28 +28,31 @@ class Window(MSFluentWindow):
         self.face_detector = FaceDetector("weights/FaceBoxes.pth")
         # 初始化舵机驱动
         self.servo_manager = ServoManager()
+        # 初始化相机驱动
+        self.camera_manager = CameraManager()
 
         # 添加子界面
-        self.mainInterface = MainInterface(self.face_detector, self)
-        self.cameraInterface = CameraInterface(self.face_detector, self)
+        self.mainInterface = MainInterface(self.face_detector, self.camera_manager, self.servo_manager, self)
+        self.cameraInterface = CameraInterface(self.face_detector, self.camera_manager, self)
         self.servoInterface = ServoInterface(self.servo_manager, self)
 
         self.initNavigation()
         self.initWindow()
-
         self.connectSignSlots()
 
     def connectSignSlots(self):
-        self.stackedWidget.currentChanged.connect(self.widgetChange)
-        self.stop_servo_ctl_sign.connect(self.servoInterface.stopServo)
+        self.mainInterface.stop_debug_camera.connect(self.cameraInterface.stopCamera)
+        self.mainInterface.stop_debug_servo.connect(self.servoInterface.stopServo)
 
-    def widgetChange(self):
-        # todo 切换界面的时候 应该检测 是否活动 活动中应该停止
-        print(self.stackedWidget.currentIndex())
-        if self.servo_manager.isAlive():
-            print("servo is alive")
-            self.stop_servo_ctl_sign.emit()
+        self.mainInterface.sys_running_sign.connect(self.sysRunningSlot)
 
+    def sysRunningSlot(self, f):
+        if f:
+            self.stackedWidget.widget(1).setEnabled(False)
+            self.stackedWidget.widget(2).setEnabled(False)
+        else:
+            self.stackedWidget.widget(1).setEnabled(True)
+            self.stackedWidget.widget(2).setEnabled(True)
 
     def initNavigation(self):
         self.addSubInterface(self.mainInterface, FIF.HOME, '主程序')
@@ -116,7 +120,7 @@ class Window(MSFluentWindow):
     def showMessageBox(self):
         w = MessageBox(
             '项目介绍🍜',
-            '该项目全称为基于视觉的人脸追踪云台,涵盖软件/硬件/算法等三大部分,可实现实时的人脸追踪效果,可应用于迎宾/安防/导购登诸多与人交互的应用场景🍤.\n如果觉得该项目做的还行,请点个赞呗🌼~',
+            '该项目全称为基于视觉的人脸追踪云台,涵盖软件/硬件/算法等三大部分,用于实现实时的人脸追踪,广泛应用于迎宾/安防/导购等诸多与人👨交互的应用场景.\n如果觉得该项目做的还行,请点个赞呗🌼~',
             self
         )
         w.yesButton.setText(' 👍 * 10086')

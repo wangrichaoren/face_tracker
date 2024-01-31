@@ -165,6 +165,6 @@ class Ui_Camera(object):
         self.detButton.setText(_translate("Camera", "开启视觉检测"))
         self.whBodyLabel.setText(_translate("Camera", "图像宽高"))
         self.nameLabel.setText(_translate("Camera", "设备名"))
-        self.posLabel.setText(_translate("Camera", "人脸位置"))
+        self.posLabel.setText(_translate("Camera", "关键点位置"))
         self.devLabel.setText(_translate("Camera", "推理设备"))
 from qfluentwidgets import BodyLabel, CardWidget, ComboBox, ImageLabel, LineEdit, PlainTextEdit, PushButton, ToolButton

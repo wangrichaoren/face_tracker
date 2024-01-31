@@ -5,6 +5,7 @@ from PyQt5.QtCore import pyqtSignal, QSettings, Qt
 from qfluentwidgets import setFont, MessageBox, FluentIcon
 import cv2
 from view.ui_camera import Ui_Camera
+
 from src.camera_manager import CameraManager
 from src.face_detect_interface import FaceDetector
 
@@ -15,15 +16,19 @@ from src.face_detect_interface import FaceDetector
 
 class CameraInterface(Ui_Camera, QWidget):
     update_frame_info_sign = pyqtSignal(int, int)
+    update_kp_sign = pyqtSignal(int, int)
 
-    def __init__(self, face_detector, parent=None):
+    def __init__(self, face_detector, camera_manager, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
+
         self.face_detector = face_detector
+        self.camera_manager = camera_manager
+
         self._isCamOpen = False
         self._isDetOpen = False
 
-        self._camera_manager = None
+        # self._camera_manager = None
 
         self._settings = QSettings("config/setting.ini", QSettings.IniFormat)
 
@@ -50,6 +55,7 @@ class CameraInterface(Ui_Camera, QWidget):
                 </html>
                 """
         self.helpPlainTextEdit.document().setHtml(help_text)
+        self.helpPlainTextEdit.setFocusPolicy(Qt.NoFocus)
 
         # 给个默认的相机
         self.chooseBox.addItem("相机 {}".format(self._settings.value("CamIdx")))
@@ -63,6 +69,11 @@ class CameraInterface(Ui_Camera, QWidget):
 
         # 连接槽函数
         self.connectSignSlots()
+
+    def stopCamera(self):
+        if self._isCamOpen:
+            print("关闭调试相机")
+            self.openCamSlot()
 
     def getAllCameraDrives(self):
         """
@@ -84,6 +95,13 @@ class CameraInterface(Ui_Camera, QWidget):
         self.refButton.clicked.connect(self.refCamDrivers)
 
         self.update_frame_info_sign.connect(self.updateFrameInfoSlot)
+        self.update_kp_sign.connect(self.updateKPSlot)
+
+    def updateKPSlot(self, x, y):
+        if x < 0 or y < 0:
+            self.posLineEdit.setText("")
+            return
+        self.posLineEdit.setText("{},{}".format(x, y))
 
     def refCamDrivers(self):
         """
@@ -98,11 +116,9 @@ class CameraInterface(Ui_Camera, QWidget):
         self.whLineEdit.setText("{}x{}".format(w, h))
 
     def openCamSlot(self):
+        assert isinstance(self.camera_manager, CameraManager)
         if not self._isCamOpen:
-            if self._camera_manager is not None:
-                return
-            self._camera_manager = CameraManager()
-            ret, msg = self._camera_manager.connect(int(self.chooseBox.currentText().split(" ")[1]))
+            ret, msg = self.camera_manager.connect(int(self.chooseBox.currentText().split(" ")[1]))
             if not ret:
                 w = MessageBox(
                     '相机启动失败',
@@ -112,31 +128,27 @@ class CameraInterface(Ui_Camera, QWidget):
                 w.yesButton.setText('确定')
                 w.cancelButton.setText('返回')
                 w.exec()
-                self._camera_manager = None
                 return
-            self._camera_manager.update_frame_sign.connect(self.updateFrame, Qt.DirectConnection)
+            self.camera_manager.update_frame_sign.connect(self.updateFrame, Qt.DirectConnection)
             self.detButton.setEnabled(True)
             self.chooseBox.setEnabled(False)
             self.refButton.setEnabled(False)
             self.nameLineEdit.setText(self.chooseBox.currentText())
             self.devLineEdit.setText("cpu")
-            self.update_frame_info_sign.emit(*self._camera_manager.getFrameWH())
+            self.update_frame_info_sign.emit(*self.camera_manager.getFrameWH())
             self.camButton.setText("关闭相机")
         else:
-            if self._camera_manager is not None:
-                self._camera_manager.disconnect()
-                self._camera_manager.deleteLater()
-                self._camera_manager = None
-                self.detButton.setEnabled(False)
-                self.chooseBox.setEnabled(True)
-                self.refButton.setEnabled(True)
-                self.nameLineEdit.setText("")
-                self.whLineEdit.setText("")
-                self.devLineEdit.setText("")
-                self.posLineEdit.setText("")
-                self.detButton.setText("开启视觉检测")
-                self._isDetOpen = False
-                self.camView.setPixmap(QPixmap())
+            self.camera_manager.disconnect()
+            self.detButton.setEnabled(False)
+            self.chooseBox.setEnabled(True)
+            self.refButton.setEnabled(True)
+            self.nameLineEdit.setText("")
+            self.whLineEdit.setText("")
+            self.devLineEdit.setText("")
+            self.detButton.setText("开启视觉检测")
+            self._isDetOpen = False
+            self.camView.setPixmap(QPixmap())
+            self.update_kp_sign.emit(-1, -1)
             self.camButton.setText("开启相机")
         self._isCamOpen = not self._isCamOpen
 
@@ -144,7 +156,13 @@ class CameraInterface(Ui_Camera, QWidget):
         _frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
         if self._isDetOpen:
             assert isinstance(self.face_detector, FaceDetector)
-            res, _frame = self.face_detector.inference(_frame)
+            res, keyp, _frame = self.face_detector.inference(_frame)
+            if keyp:
+                self.update_kp_sign.emit(int(keyp[0]), int(keyp[1]))
+            else:
+                self.update_kp_sign.emit(-1, -1)
+        else:
+            self.update_kp_sign.emit(-1, -1)
         _image = QImage(_frame[:], _frame.shape[1], _frame.shape[0], _frame.shape[1] * 3,
                         QImage.Format_RGB888)
         _out = QPixmap(_image)
@@ -152,6 +170,9 @@ class CameraInterface(Ui_Camera, QWidget):
             self.camView.setPixmap(_out)  # 设置图片显示
         else:
             self.camView.setPixmap(QPixmap())
+            self.posLineEdit.setText("")
+        if not self._isDetOpen:
+            self.posLineEdit.setText("")
 
     def detSlot(self):
         if not self._isDetOpen:

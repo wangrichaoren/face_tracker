@@ -16,9 +16,9 @@ class FaceDetector(object):
     def __init__(self, weight_path):
         self._resize = 1  # 1 / 2.5 / 3
         self._confidence_threshold = 0.05
-        self._top_k = 100
+        self._top_k = 50
         self._nms_threshold = 0.3
-        self._keep_top_k = 750
+        self._keep_top_k = 100
 
         torch.set_grad_enabled(False)
         net = FaceBoxes(phase='test', size=None, num_classes=2)  # initialize detector
@@ -32,6 +32,12 @@ class FaceDetector(object):
         self._t = {'forward_pass': Timer(), 'misc': Timer()}
 
     def inference(self, frame, thresh=0.7):
+        """
+        推理接口
+        :param frame: 输入的图像数据
+        :param thresh: 分数阈值
+        :return:
+        """
         assert isinstance(frame, np.ndarray)
         img_raw = frame.copy()
         img = np.float32(img_raw)
@@ -76,19 +82,44 @@ class FaceDetector(object):
         # keep top-K faster NMS
         dets = dets[:self._keep_top_k, :]
         self._t['misc'].toc()
-        res = []
+
+        if len(dets) == 0:
+            return [], [], img_raw
+
+        tmp_res = []
         for b in dets:
             if b[4] < thresh:
                 continue
-            text = "{:.4f}".format(b[4])
-            b = list(map(int, b))
-            cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 2)
-            cx = b[0]
-            cy = b[1] + 12
-            cv2.putText(img_raw, text, (cx, cy),
-                        cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
-            res.append(b[:4])
-        return res, img_raw
+            tmp_res.append(b[:5])
+
+        if len(tmp_res) == 0:
+            return [], [], img_raw
+
+        # keep max area
+        areas = [(_box[2] - _box[0]) * (_box[3] - _box[1]) for _box in tmp_res]
+
+        # 找到最大面积的包围框
+        max_area_index = np.argmax(areas)
+        max_area_box = tmp_res[max_area_index]
+
+        # 计算中心点
+        keyp = [(max_area_box[0] + max_area_box[2]) / 2,
+                (max_area_box[1] + max_area_box[3]) * 3 / 7]
+
+        # 绘图
+        text = "{:.4f}".format(max_area_box[4])
+        b = list(map(int, max_area_box))
+        cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (150, 255, 150), 2)
+        cx = b[0]
+        cy = b[1] + 12
+        cv2.putText(img_raw, text, (cx, cy),
+                    cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
+
+        p = 20
+        cv2.line(img_raw, (int(keyp[0] - p), int(keyp[1])), (int(keyp[0] + p), int(keyp[1])), (0, 70, 100), 2)
+        cv2.line(img_raw, (int(keyp[0]), int(keyp[1] - p)), (int(keyp[0]), int(keyp[1] + p)), (0, 70, 100), 2)
+
+        return max_area_box[:4], keyp, img_raw
 
     def _load_model(self, model, pretrained_path):
         print('Loading pretrained model from {}'.format(pretrained_path))
@@ -126,6 +157,7 @@ if __name__ == '__main__':
     img = cv2.imread(img_path)
     res = face_man.inference(img)
     print(res[0])
-    cv2.imshow('res', res[1])
+    print(res[1])
+    cv2.imshow('res', res[2])
     cv2.waitKey(0)
     pass

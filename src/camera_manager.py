@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
+import time
 
 """
 CameraManager 用于管理相机，获取图像帧
@@ -16,11 +17,23 @@ class CameraManager(QThread):
         self._cap = None
         self._current_frame = np.ndarray([480, 640, 3], dtype=np.uint8)
         self._mutex = QMutex()
-        self._isDisconnect = False
+        self._isConnect = False
+        self._cam_idx = None
+        self.start()
+
+    def getCameraIndex(self):
+        return self._cam_idx
+
+    def isAlive(self):
+        if self._cap is None:
+            return False
+        if not self._cap.isOpened:
+            return False
+        return True
 
     def connect(self, camera_id: int):
         if self._cap is not None:
-            return False, "相机已启动."
+            return False, "相机{}已启动.".format(self._cam_idx)
         try:
             self._cap = cv2.VideoCapture(camera_id)
         except Exception as e:
@@ -29,7 +42,8 @@ class CameraManager(QThread):
         if not self._cap.isOpened():
             self._cap = None
             return False, "编号为 {} 的相机不能开启,请检查是否连接上设备.".format(camera_id)
-        self.start()
+        self._isConnect = True
+        self._cam_idx = camera_id
         return True, ""
 
     def getFPS(self):
@@ -41,8 +55,12 @@ class CameraManager(QThread):
 
     def run(self):
         while True:
-            if self._isDisconnect:
-                return
+            if not self._isConnect:
+                time.sleep(0.05)
+                continue
+            if self._cap is None:
+                time.sleep(0.05)
+                continue
             self._mutex.lock()
             ret, frame = self._cap.read()
             if ret:
@@ -55,9 +73,9 @@ class CameraManager(QThread):
     def disconnect(self):
         if self._cap is None:
             return
-        self._isDisconnect = True
+        self._isConnect = False
         self._cap.release()
-        self.terminate()
+        self._cap = None
 
     def getFrame(self):
         return self._current_frame

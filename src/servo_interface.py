@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QWidget, QGraphicsDropShadowEffect, QBoxLayout, QHBoxLayout, QPushButton
-from PyQt5.QtCore import Qt, pyqtSignal, QDateTime, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QDateTime, QTimer, QSettings
 from threading import Thread
 from qfluentwidgets import FluentIcon, PushButton, PlainTextEdit, LineEdit, ComboBox, BodyLabel, setFont, MessageBox
 
@@ -21,10 +21,11 @@ class ServoInterface(Ui_servo, QWidget):
         super().__init__(parent=parent)
         self.setupUi(self)
 
+        self._settings = QSettings("config/setting.ini", QSettings.IniFormat)
+
         # 属性变量
         self._isConnect = False
         self._isRandom = False
-        # self._servoManager = ServoManager()
         self._servoManager = servo_manager
 
         self.upButton.setIcon(FluentIcon.UP)
@@ -106,8 +107,7 @@ class ServoInterface(Ui_servo, QWidget):
         # ---------------------------------------------
 
         help_text_ed = PlainTextEdit(self)
-        help_text_ed.setMaximumHeight(350)
-        help_text_ed.setMinimumHeight(290)
+        # help_text_ed.setMaximumHeight(350)
         help_text_ed.setReadOnly(True)
         html_text = """
                 <html>
@@ -122,6 +122,8 @@ class ServoInterface(Ui_servo, QWidget):
                 </html>
                 """
         help_text_ed.document().setHtml(html_text)
+        help_text_ed.setFocusPolicy(Qt.NoFocus)
+        help_text_ed.setMinimumHeight(200)
         self.setCard.viewLayout.addWidget(help_text_ed)
 
         # 设置阴影
@@ -273,6 +275,10 @@ class ServoInterface(Ui_servo, QWidget):
         self.update_angle_sign.emit()
 
     def stopServo(self):
+        """
+        切换page时停止 *前提是做了舵机存活检测*
+        :return:
+        """
         if self._isRandom:
             self.testServo()
         self.connectServo()
@@ -311,11 +317,13 @@ class ServoInterface(Ui_servo, QWidget):
             self.rotup_lb2.setText("0")
             self.rotbt_lb2.setText("0")
         else:
-            is_suc = self._servoManager.connectSerial()
+            is_suc = self._servoManager.connectSerial(self._settings.value("ServoIdx"))
             if not is_suc:
                 w = MessageBox(
                     '串口打开失败',
-                    '请检查串口是否插入设备上,或者串口号(当前COM4)是否错误!\n查询串口号方法:设备管理器->端口(COM和LPT)->USB-SERIAL CH340(COMX).',
+                    '请检查串口是否插入设备上,或者串口号(当前:{})是否错误!\n查询串口号方法:设备管理器->端口(COM和LPT)->USB-SERIAL CH340(COM?).\n'
+                    '确定好端口号后,请更新端口号到config/setting.ini下的ServoIdx的字段后.'.format(
+                        self._settings.value("ServoIdx")),
                     self
                 )
                 w.yesButton.setText('确定')

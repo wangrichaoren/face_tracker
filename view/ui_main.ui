@@ -17,7 +17,7 @@
    <item row="0" column="0" colspan="2">
     <widget class="CardWidget" name="CardWidget">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -54,8 +54,8 @@
       <property name="spacing">
        <number>8</number>
       </property>
-      <item row="0" column="1">
-       <widget class="PushButton" name="startButton">
+      <item row="2" column="1">
+       <widget class="PillPushButton" name="sysButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -64,14 +64,8 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>300</width>
-          <height>100</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>120</height>
+          <width>200</width>
+          <height>70</height>
          </size>
         </property>
         <property name="text">
@@ -79,24 +73,8 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="1">
-       <widget class="PushButton" name="stopButton">
+      <item row="1" column="2" rowspan="3">
+       <widget class="PlainTextEdit" name="helpPlainTextEdit">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -105,36 +83,17 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>300</width>
-          <height>100</height>
+          <width>0</width>
+          <height>215</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>120</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>软急停</string>
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+      <item row="1" column="0" rowspan="3">
+       <widget class="HeaderCardWidget" name="HeaderCardWidget"/>
       </item>
      </layout>
     </widget>
@@ -148,14 +107,41 @@
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>
+   <class>PillPushButton</class>
+   <extends>ToggleButton</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>ToggleButton</class>
+   <extends>PushButton</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
    <class>CardWidget</class>
    <extends>QFrame</extends>
    <header>qfluentwidgets</header>
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>SimpleCardWidget</class>
+   <extends>CardWidget</extends>
+   <header>qfluentwidgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HeaderCardWidget</class>
+   <extends>SimpleCardWidget</extends>
+   <header>qfluentwidgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>ImageLabel</class>
    <extends>QLabel</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>PlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
    <header>qfluentwidgets</header>
   </customwidget>
  </customwidgets>

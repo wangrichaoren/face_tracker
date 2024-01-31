@@ -196,7 +196,7 @@
          <item row="4" column="0">
           <widget class="BodyLabel" name="posLabel">
            <property name="text">
-            <string>人脸位置</string>
+            <string>关键点位置</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
