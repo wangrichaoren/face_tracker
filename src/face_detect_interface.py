@@ -103,8 +103,10 @@ class FaceDetector(object):
         max_area_box = tmp_res[max_area_index]
 
         # 计算中心点
+        # keyp = [(max_area_box[0] + max_area_box[2]) / 2,
+        #         (max_area_box[1] + max_area_box[3]) * 3 / 7]
         keyp = [(max_area_box[0] + max_area_box[2]) / 2,
-                (max_area_box[1] + max_area_box[3]) * 3 / 7]
+                (max_area_box[1] + max_area_box[3]) / 2]
 
         # 绘图
         text = "{:.4f}".format(max_area_box[4])

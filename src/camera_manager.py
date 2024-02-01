@@ -15,7 +15,7 @@ class CameraManager(QThread):
     def __init__(self):
         super().__init__()
         self._cap = None
-        self._current_frame = np.ndarray([480, 640, 3], dtype=np.uint8)
+        self._current_frame = np.ndarray([720, 1280, 3], dtype=np.uint8)
         self._mutex = QMutex()
         self._isConnect = False
         self._cam_idx = None
@@ -36,11 +36,15 @@ class CameraManager(QThread):
             return False, "相机{}已启动.".format(self._cam_idx)
         try:
             self._cap = cv2.VideoCapture(camera_id)
+            # 原生分辨率为640*480，提升到1280*720
+            self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         except Exception as e:
             self._cap = None
             return False, "编号为 {} 的相机启动异常,报错信息 {}.".format(camera_id, e)
         if not self._cap.isOpened():
             self._cap = None
+            del self._cap
             return False, "编号为 {} 的相机不能开启,请检查是否连接上设备.".format(camera_id)
         self._isConnect = True
         self._cam_idx = camera_id
@@ -75,6 +79,7 @@ class CameraManager(QThread):
             return
         self._isConnect = False
         self._cap.release()
+        del self._cap
         self._cap = None
 
     def getFrame(self):

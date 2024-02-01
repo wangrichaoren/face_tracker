@@ -162,6 +162,26 @@ class ServoManager(object):
         self.vertical_servo_angle = angle2v
         self.horizontal_servo_angle = angle2h
 
+    def moveA(self, x_step: int, y_step: int, speed: int = 100):
+        """
+
+        :param x_step: +x代表向下 -x代表向上
+        :param y_step:
+        :param speed:
+        :return:
+        """
+        x_ang = self.getHorizontalServoAngle() + x_step
+        y_ang = self.getVerticalServoAngle() + y_step
+        if x_ang > 180 or x_ang < 0 or y_ang > 180 or y_ang < 0:
+            return False, "存在舵机超行程."
+        send_str = "#1P{}#2P{}T{}\r\n".format(self._angler2Value(y_ang), self._angler2Value(x_ang), speed)
+        assert isinstance(self.serial, serial.Serial), ""
+        self.serial.write(send_str.encode("utf-8"))
+        self._waitRead()
+        self.vertical_servo_angle = y_ang
+        self.horizontal_servo_angle = x_ang
+        return True, ""
+
     def moveUp(self, step: int, speed: int = 100):
         ang = self.getVerticalServoAngle() - step
         if ang < 0:
@@ -235,10 +255,12 @@ class ServoManager(object):
 
 if __name__ == '__main__':
     servo_man = ServoManager()
-    servo_man.connectSerial()
-    for _ in range(50):
-        servo_man.singleRotation(ServoEnum.HORIZONTAL, 0)
-        time.sleep(1)
-        for _ in range(18):
-            servo_man.moveRight(10)
+    servo_man.connectSerial("COM7")
+    time.sleep(0.5)
+    servo_man.moveA(10, 10, 50)
+    # for _ in range(50):
+    #     servo_man.singleRotation(ServoEnum.HORIZONTAL, 0)
+    #     time.sleep(1)
+    #     for _ in range(18):
+    #         servo_man.moveRight(10)
     servo_man.disconnectSerial()

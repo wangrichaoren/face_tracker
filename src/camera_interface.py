@@ -17,6 +17,7 @@ from src.face_detect_interface import FaceDetector
 class CameraInterface(Ui_Camera, QWidget):
     update_frame_info_sign = pyqtSignal(int, int)
     update_kp_sign = pyqtSignal(int, int)
+    clear_camview_sign = pyqtSignal()
 
     def __init__(self, face_detector, camera_manager, parent=None):
         super().__init__(parent=parent)
@@ -27,8 +28,6 @@ class CameraInterface(Ui_Camera, QWidget):
 
         self._isCamOpen = False
         self._isDetOpen = False
-
-        # self._camera_manager = None
 
         self._settings = QSettings("config/setting.ini", QSettings.IniFormat)
 
@@ -97,6 +96,8 @@ class CameraInterface(Ui_Camera, QWidget):
         self.update_frame_info_sign.connect(self.updateFrameInfoSlot)
         self.update_kp_sign.connect(self.updateKPSlot)
 
+        self.clear_camview_sign.connect(self.clearViewSlot, Qt.DirectConnection)
+
     def updateKPSlot(self, x, y):
         if x < 0 or y < 0:
             self.posLineEdit.setText("")
@@ -138,6 +139,7 @@ class CameraInterface(Ui_Camera, QWidget):
             self.update_frame_info_sign.emit(*self.camera_manager.getFrameWH())
             self.camButton.setText("关闭相机")
         else:
+            self.camera_manager.update_frame_sign.disconnect()
             self.camera_manager.disconnect()
             self.detButton.setEnabled(False)
             self.chooseBox.setEnabled(True)
@@ -147,10 +149,15 @@ class CameraInterface(Ui_Camera, QWidget):
             self.devLineEdit.setText("")
             self.detButton.setText("开启视觉检测")
             self._isDetOpen = False
-            self.camView.setPixmap(QPixmap())
+            # self.camView.setPixmap(QPixmap())
+            self.clear_camview_sign.emit()
             self.update_kp_sign.emit(-1, -1)
             self.camButton.setText("开启相机")
         self._isCamOpen = not self._isCamOpen
+
+    def clearViewSlot(self):
+        self.camView.setPixmap(
+            QPixmap("resource/image/trans.png").scaled(self.camView.size(), aspectRatioMode=True))
 
     def updateFrame(self, frame):
         _frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
@@ -167,12 +174,20 @@ class CameraInterface(Ui_Camera, QWidget):
                         QImage.Format_RGB888)
         _out = QPixmap(_image)
         if self._isCamOpen:
-            self.camView.setPixmap(_out)  # 设置图片显示
+            view_size = self.camView.size()
+            # 调整图片尺寸以适应label大小，并更新label上的图片显示
+            scaled_image = _out.scaled(view_size, aspectRatioMode=True)
+            self.camView.setPixmap(scaled_image)
+            # self.camView.setPixmap(_out)  # 设置图片显示
         else:
-            self.camView.setPixmap(QPixmap())
+            # self.camView.setPixmap(QPixmap())
+            self.clear_camview_sign.emit()
             self.posLineEdit.setText("")
         if not self._isDetOpen:
             self.posLineEdit.setText("")
+
+    # def resizeEvent(self, event):
+    #     pass
 
     def detSlot(self):
         if not self._isDetOpen:
