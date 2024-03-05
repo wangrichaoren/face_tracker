@@ -160,32 +160,35 @@ class CameraInterface(Ui_Camera, QWidget):
             QPixmap("resource/image/trans.png").scaled(self.camView.size(), aspectRatioMode=True))
 
     def updateFrame(self, frame):
-        _frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
-        if self._isDetOpen:
-            assert isinstance(self.face_detector, FaceDetector)
-            res, keyp, _frame = self.face_detector.inference(_frame)
-            if keyp:
-                self.update_kp_sign.emit(int(keyp[0]), int(keyp[1]))
+        try:
+            _frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
+            if self._isDetOpen:
+                assert isinstance(self.face_detector, FaceDetector)
+                res, keyp, _frame = self.face_detector.inference(_frame)
+                if keyp:
+                    self.update_kp_sign.emit(int(keyp[0]), int(keyp[1]))
+                else:
+                    self.update_kp_sign.emit(-1, -1)
             else:
                 self.update_kp_sign.emit(-1, -1)
-        else:
-            self.update_kp_sign.emit(-1, -1)
-        _image = QImage(_frame[:], _frame.shape[1], _frame.shape[0], _frame.shape[1] * 3,
-                        QImage.Format_RGB888)
-        _out = QPixmap(_image)
-        if self._isCamOpen:
-            view_size = self.camView.size()
-            # 调整图片尺寸以适应label大小，并更新label上的图片显示
-            scaled_image = _out.scaled(view_size, aspectRatioMode=True)
-            self.camView.setPixmap(scaled_image)
-            # self.camView.setPixmap(_out)  # 设置图片显示
-        else:
-            # self.camView.setPixmap(QPixmap())
-            self.clear_camview_sign.emit()
-            self.posLineEdit.setText("")
-        if not self._isDetOpen:
-            self.posLineEdit.setText("")
-
+            _image = QImage(_frame[:], _frame.shape[1], _frame.shape[0], _frame.shape[1] * 3,
+                            QImage.Format_RGB888)
+            _out = QPixmap(_image)
+            if self._isCamOpen:
+                view_size = self.camView.size()
+                # 调整图片尺寸以适应label大小，并更新label上的图片显示
+                scaled_image = _out.scaled(view_size, aspectRatioMode=True)
+                self.camView.setPixmap(scaled_image)
+                # self.camView.setPixmap(_out)  # 设置图片显示
+            else:
+                # self.camView.setPixmap(QPixmap())
+                self.clear_camview_sign.emit()
+                self.posLineEdit.setText("")
+            if not self._isDetOpen:
+                self.posLineEdit.setText("")
+        except Exception as e:
+            print(e)
+            exec(0)
     # def resizeEvent(self, event):
     #     pass
 

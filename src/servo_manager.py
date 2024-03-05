@@ -103,7 +103,7 @@ class ServoManager(object):
 
     def _waitRead(self):
         self.serial.flush()
-        print(self.serial.readline())
+        self.serial.readline()
 
     def getVerticalServoAngle(self):
         """
@@ -234,8 +234,8 @@ class ServoManager(object):
             v1 = random.randint(0, 180)
             v2 = random.randint(0, 180)
             self.multiRotation(v1, v2, 500)  # 不管传什么速度，都给500，否则可能欠压
-            print("v1: {}, v2: {}".format(v1, v2))
-            print("curV: {}, curH:{}".format(self.getVerticalServoAngle(), self.getHorizontalServoAngle()))
+            # print("v1: {}, v2: {}".format(v1, v2))
+            # print("curV: {}, curH:{}".format(self.getVerticalServoAngle(), self.getHorizontalServoAngle()))
             time.sleep(0.3)
 
     def stop(self):

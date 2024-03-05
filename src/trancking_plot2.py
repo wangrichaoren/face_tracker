@@ -4,14 +4,14 @@ import numpy as np
 
 def trancking_plot2(info, servo_manager):
     """
-            策略二: 根据相机内参，计算x和y方向相对相机光心的差角
-            """
+    策略二: 根据相机内参，计算x和y方向相对相机光心的差角
+    todo 收敛巨慢,很难控制...
+    """
     x, y, w, h = info
     mtx = np.array([[1.31922110e+03, 0.00000000e+00, 6.15777177e+02],
                     [0.00000000e+00, 1.32761156e+03, 3.73921249e+02],
                     [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
     kp = [x, y]
-
     def calculate_angle(mtx, pixel_coords):
         # 将像素坐标转换为相机坐标系中的坐标
         inv_mtx = np.linalg.inv(mtx)

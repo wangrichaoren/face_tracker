@@ -2,9 +2,9 @@
 import sys
 from PyQt5.QtCore import Qt, QSettings, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QFrame, QHBoxLayout
-from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme, MSFluentWindow, SubtitleLabel, setFont,
-                            isDarkTheme, NavigationPushButton)
+from PyQt5.QtWidgets import QApplication
+from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme, MSFluentWindow, isDarkTheme,
+                            NavigationPushButton)
 from qfluentwidgets import FluentIcon as FIF
 from src.servo_interface import ServoInterface
 from src.camera_interface import CameraInterface
@@ -129,12 +129,11 @@ class Window(MSFluentWindow):
 
 
 if __name__ == '__main__':
+    app = QApplication(sys.argv)
     # 设置高分屏 高dpi
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
-
-    app = QApplication(sys.argv)
     w = Window()
     w.show()
     app.exec_()

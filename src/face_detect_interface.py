@@ -14,7 +14,6 @@ from src.FaceBoxesPyTorch.utils.timer import Timer
 
 class FaceDetector(object):
     def __init__(self, weight_path):
-        self._resize = 1  # 1 / 2.5 / 3
         self._confidence_threshold = 0.05
         self._top_k = 50
         self._nms_threshold = 0.3
@@ -41,7 +40,6 @@ class FaceDetector(object):
         assert isinstance(frame, np.ndarray)
         img_raw = frame.copy()
         img = np.float32(img_raw)
-        # img = cv2.resize(img, None, None, fx=self._resize, fy=self._resize, interpolation=cv2.INTER_LINEAR)
         im_height, im_width, _ = img.shape
         scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
         img -= (104, 117, 123)
@@ -60,7 +58,7 @@ class FaceDetector(object):
         priors = priors.to(self._device)
         prior_data = priors.data
         boxes = decode(loc.data.squeeze(0), prior_data, cfg['variance'])
-        boxes = boxes * scale / self._resize
+        boxes = boxes * scale
         boxes = boxes.cpu().numpy()
         scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
 

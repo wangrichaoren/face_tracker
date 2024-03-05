@@ -91,7 +91,14 @@ if __name__ == '__main__':
 
     camera_man = CameraManager()
     camera_man.connect(1)
-    time.sleep(0.5)
-    print(type(camera_man.getFrame()))
-    cv2.imwrite("../test/test.jpg", camera_man.getFrame())
-    camera_man.disconnect()
+    while True:
+        img=camera_man.getFrame()
+        cv2.imshow("qwe",img)
+        key =cv2.waitKey(1)
+        if key==27:
+            print("press esc exit")
+            break
+    # time.sleep(0.5)
+    # print(type(camera_man.getFrame()))
+    # cv2.imwrite("../test/test.jpg", camera_man.getFrame())
+    # camera_man.disconnect()
